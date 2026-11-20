@@ -38,7 +38,7 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             try:
                 if not self.wfile.closed:
-                    self._json({"error": "Internal server error."}, status=500)
+                    self._json({"error": "服务器内部错误。"}, status=500)
             except Exception:
                 pass
 
@@ -67,7 +67,7 @@ class Handler(BaseHTTPRequestHandler):
         if path.startswith("/api/devices/"):
             udid = unquote(path.removeprefix("/api/devices/")).strip("/")
             if not udid or "/" in udid:
-                self._json({"error": "Missing device id."}, status=400)
+                self._json({"error": "缺少设备标识。"}, status=400)
                 return
             self._device(udid)
             return
@@ -92,21 +92,21 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/wifi/pair":
             if not udid:
-                self._json({"ok": False, "error": "Plug in the iPhone first."}, status=400)
+                self._json({"ok": False, "error": "请先用数据线连接 iPhone。"}, status=400)
                 return
             self._json(pair_for_wifi(udid))
             return
         if path.startswith("/api/window/"):
             action = path.removeprefix("/api/window/").strip("/")
             if not action or action not in ALLOWED_ACTIONS:
-                self._json({"ok": False, "error": "Unknown window action."}, status=400)
+                self._json({"ok": False, "error": "无法识别窗口操作。"}, status=400)
                 return
             width = int(payload.get("width") or 0)
             height = int(payload.get("height") or 0)
             self._json({"ok": window_action(action, width, height)})
             return
         if path != "/api/screen":
-            self._json({"error": "Unknown action."}, status=404)
+            self._json({"error": "无法识别操作。"}, status=404)
             return
         transport = payload.get("transport")
         if transport not in {"auto", "usb", "wifi"}:
@@ -170,7 +170,7 @@ class Handler(BaseHTTPRequestHandler):
                     return
         except (OSError, http.client.HTTPException) as error:
             if not started:
-                self._json({"error": f"Screen stream is not running ({error})."}, status=503)
+                self._json({"error": f"视频流未运行（{error}）。"}, status=503)
         finally:
             conn.close()
 
@@ -208,7 +208,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._write_client(payload)
         except OSError as error:
             if not started:
-                self._json({"error": f"Screen stream is not running ({error})."}, status=503)
+                self._json({"error": f"视频流未运行（{error}）。"}, status=503)
         finally:
             conn.close()
 
@@ -219,10 +219,10 @@ class Handler(BaseHTTPRequestHandler):
         try:
             target.relative_to(root)
         except ValueError:
-            self._json({"error": "Not found."}, status=404)
+            self._json({"error": "找不到请求的资源。"}, status=404)
             return
         if not target.is_file():
-            self._json({"error": "Not found."}, status=404)
+            self._json({"error": "找不到请求的资源。"}, status=404)
             return
         kind = {
             ".html": "text/html; charset=utf-8",
@@ -246,7 +246,7 @@ class SingleServer(ThreadingHTTPServer):
 
 def main() -> None:
     server = SingleServer((HOST, PORT), Handler)
-    print(f"Handset listening on http://{HOST}:{PORT}", flush=True)
+    print(f"Pane 服务地址： http://{HOST}:{PORT}", flush=True)
     server.serve_forever()
 
 

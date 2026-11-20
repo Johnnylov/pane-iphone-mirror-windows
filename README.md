@@ -1,139 +1,64 @@
-<p align="center">
-  <img src="handset/web/logo.svg" width="128" alt="Pane">
-</p>
+# Pane 中文版
 
-<h1 align="center">Pane</h1>
+通过 USB 或 Wi-Fi 在 Windows 上显示 iPhone 的实时画面，用鼠标点按、长按、拖动和滑动，用电脑键盘输入。Pane 免费开源，视频和输入指令在手机与电脑之间传输。
 
-<p align="center">
-  <b>Mirror and control an iPhone from Windows.</b>
-</p>
+**[下载 Windows 中文便携版（Pane.exe）](https://github.com/Johnnylov/pane-iphone-mirror-windows/releases/latest/download/Pane.exe)** · [查看发行说明](https://github.com/Johnnylov/pane-iphone-mirror-windows/releases/latest)
 
-<p align="center">
-  <a href="https://github.com/teyboxv1/pane-iphone-mirror-windows/releases/latest"><img src="https://img.shields.io/badge/download-Pane.exe-0a84ff" alt="Download Pane.exe"></a>
-  <img src="https://img.shields.io/badge/platform-Windows-555555" alt="Windows">
-  <img src="https://img.shields.io/badge/license-GPL--3.0-555555" alt="GPL-3.0">
-</p>
+本仓库基于 [Pane 上游项目](https://github.com/teyboxv1/pane-iphone-mirror-windows) 1.0.2，将主界面、设备状态、操作提示和使用指南译为简体中文。上游演示见[操作动图](docs/pane.gif)。
 
-<p align="center">
-  <img src="docs/pane.gif" width="900" alt="Pane mirroring an iPhone on Windows">
-</p>
+## 首次有线投屏
 
-Pane is iPhone screen mirroring for Windows, a scrcpy for iPhone: the phone's screen on the PC, controlled with the mouse and keyboard, with no jailbreak, no Mac, and no app installed on the phone. Video and input stay on your own computer.
+1. 准备 64 位 Windows 10 或 11、Chrome 或 Microsoft Edge，以及一根支持数据传输的 USB 线。安装 Microsoft Store 中的 [Apple 设备](https://apps.microsoft.com/detail/9np83lwlpz9k) 或 iTunes，以便 Windows 识别 iPhone。
+2. **实时画面需要 iOS 或 iPadOS 27 及以上版本**。在手机的「设置 → 隐私与安全性 → 开发者模式」中开启该选项。按提示重启，解锁并确认。
+3. 用数据线连接手机和电脑，解锁手机，点按「信任」。打开中文版 `Pane.exe`，选择「数据线」，点击「开始投屏」。首次连接可能需要下载并挂载开发者映像，请保持手机解锁。
 
-Live video needs **iOS / iPadOS 27 or newer**. On iOS 26 and older the phone can connect, but it sends no picture.
+便携版已包含 Python，手机端无需安装 App 或越狱。可执行文件未经代码签名，Windows SmartScreen 可能提示未知发布者。可以在发行页校验 SHA-256，也可以按下方步骤自行构建。
 
-It focuses on:
+## Wi-Fi 投屏
 
-* **lightness** — one portable `Pane.exe`, no installer and no account
-* **picture** — the iPhone display as a live HEVC stream, decoded in the browser
-* **control** — mouse taps and swipes, keyboard typing, and the hardware buttons
-* **privacy** — no cloud, no telemetry, no internet account
-* **freedom** — free and open source
+保持数据线连接，点击「设置 Wi-Fi」完成首次配对。然后拔下数据线，让手机保持解锁，确保电脑和手机连接到同一专用网络，再选择「Wi-Fi」并点击「开始投屏」。VPN 或路由器的无线客户端隔离可能会影响设备发现。
 
-Its features include:
+## 操作
 
-* USB mirroring
-* Wi-Fi mirroring after a one-time cable pairing
-* tap, long-press, drag, and swipe
-* keyboard input, including Ctrl+C / Ctrl+V / Ctrl+A / Ctrl+Z as the matching shortcuts
-* Home, App Switcher, Lock, Siri, volume, mute, Notification Center, and Control Center
-* fit, zoom, rotate, and full-screen touch view
-* restart if the picture stalls
+| 电脑上的操作 | iPhone 上的效果 |
+| --- | --- |
+| 单击、按住、拖动 | 点按、长按、滑动 |
+| 右键，或从画面底边上滑 | 返回主屏幕 |
+| 从底边上滑，稍停再松开 | 打开 App 切换器 |
+| 键盘输入 | 输入到手机当前选中的文本框。可用「键盘输入到 iPhone」开关暂停转发 |
+| Ctrl+C / V / X / A / Z | 复制、粘贴、剪切、全选、撤销 |
+| 点击手机边框按键 | 锁屏、调节音量、静音 |
 
-## Prerequisites
+界面还提供通知中心、控制中心、Siri、缩放、旋转、紧凑窗口和全屏操控。按 Esc 可退出全屏。
 
-The iPhone or iPad must run **iOS / iPadOS 27 or newer**. That is the minimum for a picture.
+## 黑屏时怎么处理
 
-**Developer Mode** must be on: *Settings → Privacy & Security → Developer Mode*.
+- **先确认系统版本。** 根据上游说明，iOS 26 及更早版本可能连接成功，甚至能接收输入，但不会传回实时画面。
+- 若系统符合要求，请保持手机解锁，确认已信任电脑并开启开发者模式。如果相机、语音备忘录或其他使用麦克风的 App 在前台，请先退出，再点击「重启投屏」。
+- 若 Windows 无法识别手机，请检查 Apple USB 驱动及数据线。若仅 Wi-Fi 发现失败，可先切回「数据线」。
 
-On **iOS 26 and older** the phone can still connect, and touch or keyboard input may work, but Apple does not send video frames. The screen stays black. Update to iOS 27 or newer for a picture.
+## 从源码运行或打包
 
-You also need:
-
-* Windows 10 or Windows 11 (64-bit)
-* [Apple Devices](https://apps.microsoft.com/detail/9np83lwlpz9k) (or iTunes) from the Microsoft Store, for the USB driver
-* Google Chrome or Microsoft Edge, which Pane uses as its window
-
-Unlock the iPhone and tap **Trust This Computer** the first time you plug it in.
-
-## Get the app
-
-**Windows**
-
-Download [`Pane.exe`](https://github.com/teyboxv1/pane-iphone-mirror-windows/releases/latest) from the latest release and run it. No Python install is required for the executable.
-
-**From source**
+在装有 Git 和 Python 的 Windows 电脑上运行以下命令。本中文版使用 Python 3.12 构建。
 
 ```powershell
-git clone https://github.com/teyboxv1/pane-iphone-mirror-windows.git
+git clone https://github.com/Johnnylov/pane-iphone-mirror-windows.git
 cd pane-iphone-mirror-windows
-pip install -r requirements.txt
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 python -m handset.server
 ```
 
-Open http://127.0.0.1:8765
-
-**Build `Pane.exe`**
+在 Chrome 或 Edge 中打开 <http://127.0.0.1:8765>。从源码打包时，在同一环境内执行以下命令，产物位于 `dist\Pane.exe`。
 
 ```powershell
-pip install pyinstaller pillow
-powershell -ExecutionPolicy Bypass -File packaging\build.ps1
+python -m pip install pyinstaller pillow
+.\packaging\build.ps1
 ```
 
-The executable is written to `dist\Pane.exe`.
+Pane 通过 [pymobiledevice3](https://github.com/doronz88/pymobiledevice3) 建立设备通道，在浏览器中解码 HEVC 视频，并以 HID 事件回传触控与按键。本地服务监听 `127.0.0.1`。可选的 AirPlay 音频接收器需单独提供 Shairport4w，详见[组件说明](handset/bin/NOTICE.txt)。
 
-## Must-know tips
+## 反馈与许可
 
-* Plug in the cable and choose **Cable** for the first connection. That is the stable path.
-* Choose **Wi-Fi** only after **Set up Wi-Fi**, with the cable unplugged, the phone unlocked, and both devices on the same private network.
-* A VPN, or a router that isolates wireless clients, hides the iPhone from Wi-Fi discovery. USB does not use that discovery.
-* Right-click on the mirror sends Home.
-* Drag up from the bottom edge for Home. Pause before release for the App Switcher.
-* Quit Camera, Voice Memos, or any app using the microphone before you start. iOS will not stream the display while one of those is in front.
-
-## Controls
-
-| On the PC | On the iPhone |
-| --- | --- |
-| Left click / drag | Tap / swipe |
-| Right click | Home |
-| Keyboard | Types into the focused field |
-| Ctrl+C / V / X / A / Z | Copy / Paste / Cut / Select all / Undo |
-| Side buttons on the frame | Lock, volume, mute |
-
-## How it works
-
-Pane uses [pymobiledevice3](https://github.com/doronz88/pymobiledevice3) to open the same kind of tunnel Xcode uses, over USB or over Wi-Fi after pairing. On iOS 27 or newer the phone sends the display as HEVC. Chrome or Edge decodes it. Touches, buttons, and keystrokes go back as HID events. Everything listens on `127.0.0.1`.
-
-```
-iPhone ── USB or Wi-Fi ──▶ Pane ──▶ window (video + input)
-```
-
-## FAQ
-
-**Does it work on iOS 26?**
-No picture. iOS 27 is the minimum for video. Older versions can connect and may accept input, but they do not send frames.
-
-**Do I need a jailbreak or a Mac?**
-No.
-
-**Does it work without a cable?**
-Yes, after one USB pairing, on the same Wi-Fi, with the iPhone unlocked.
-
-**Is anything uploaded?**
-No. The video and input stay between the iPhone and the PC.
-
-**Windows SmartScreen warns about `Pane.exe`.**
-The file is not code-signed yet. Choose *More info → Run anyway*, or build it from source.
-
-## Contact
-
-Open a [GitHub issue](https://github.com/teyboxv1/pane-iphone-mirror-windows/issues) for bug reports and questions. For a black screen, check the iOS version first.
-
-## License
-
-Copyright (C) Pane contributors
-
-Pane is licensed under the [GNU General Public License v3.0](LICENSE).
-
-Not affiliated with or endorsed by Apple Inc. iPhone, iPad, iOS, and iPadOS are trademarks of Apple Inc.
+上游功能问题可查阅 [Pane 的 Issues](https://github.com/teyboxv1/pane-iphone-mirror-windows/issues)。原项目版权归 Pane 贡献者所有，代码按 [GNU GPL v3.0](LICENSE) 发布。iPhone、iPad、iOS 和 iPadOS 为 Apple Inc. 的商标，本项目与 Apple 无隶属或背书关系。

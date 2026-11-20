@@ -23,20 +23,20 @@ _VPN_ADAPTER = re.compile(
 _WIFIDIRECT_ADAPTER = re.compile(r"wi-?fi direct", re.I)
 
 WIFI_NOT_FOUND_HINT = (
-    "The iPhone was not found on the network. Put the PC and the iPhone on the same Wi-Fi, "
-    "keep the iPhone unlocked, and set that Wi-Fi to Private in Windows settings. "
-    "If a VPN is on, disconnect it or allow local network traffic — VPNs often block Bonjour."
+    "在网络中找不到 iPhone。请将电脑和 iPhone 连到同一 Wi-Fi，"
+    "保持手机解锁，并在 Windows 设置中将该网络设为「专用网络」。"
+    "VPN 可能会阻止 Bonjour 发现设备。如果启用了 VPN，请断开连接或允许访问本地网络。"
 )
 
 WIFI_NOT_FOUND_NO_ADS = (
-    "Pane did not see the iPhone's Wi-Fi pairing broadcast on the LAN. "
-    "Unplug the USB cable, unlock the iPhone, and confirm it is on Wi-Fi (not cellular only). "
-    "Some routers isolate wireless clients — disable AP/client isolation, or mirror over USB."
+    "Pane 在局域网中未收到 iPhone 的 Wi-Fi 配对广播。"
+    "请拔下数据线、解锁手机，并确认 iPhone 已连接 Wi-Fi。"
+    "如果路由器启用了无线客户端隔离，可关闭该选项或改用 USB 投屏。"
 )
 
 WIFI_MULTICAST_BLOCKED = (
-    "Multicast DNS (UDP port 5353) does not appear to work on this PC, so Wi-Fi discovery cannot run. "
-    "Allow Python/Pane through Windows Firewall on Private networks, or use USB mirroring."
+    "此电脑上的多播 DNS（UDP 5353 端口）似乎不可用，无法发现 Wi-Fi 设备。"
+    "请在 Windows 防火墙中允许 Python 或 Pane 访问专用网络，或改用 USB 投屏。"
 )
 
 BONJOUR_TIMEOUT = 12.0
@@ -219,7 +219,7 @@ def pair_for_wifi(udid: str) -> dict:
     try:
         asyncio.run(pair())
     except Exception as error:
-        return {"ok": False, "error": f"Wi-Fi setup needs the cable once: {error}"}
+        return {"ok": False, "error": f"首次设置 Wi-Fi 需要数据线。详细信息：{error}"}
     return {"ok": udid in wifi_paired_udids(), "paired": wifi_paired_udids()}
 
 
@@ -233,8 +233,8 @@ async def _wifi_provider(serial: Optional[str], autopair: bool, remotepairing_fa
     if not services:
         if serial and not remote_pairing_record_ok(serial):
             raise WifiNotFoundError(
-                "This PC's Wi-Fi pairing record is outdated. Plug in the cable, tap Trust, "
-                "and press Set up Wi-Fi again."
+                "此电脑的 Wi-Fi 配对记录已失效。请插入数据线，在手机上点按「信任」，"
+                "然后再次点击「设置 Wi-Fi」。"
             )
         probe = await wifi_discovery_snapshot(timeout=min(5.0, BONJOUR_TIMEOUT))
         if probe["multicastBlocked"]:

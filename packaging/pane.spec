@@ -12,7 +12,7 @@ SHIMS = ROOT / "handset" / "_shims"
 sys.path.insert(0, str(SHIMS))
 os.environ["PYTHONPATH"] = os.pathsep.join(filter(None, [str(SHIMS), os.environ.get("PYTHONPATH")]))
 
-datas = [(str(ROOT / "handset" / "web"), "handset/web")]
+datas = [(str(ROOT / "handset" / "web"), "handset/web"), (str(ROOT / "LICENSE"), ".")]
 _bin_dir = ROOT / "handset" / "bin"
 if _bin_dir.is_dir():
     datas.append((str(_bin_dir), "handset/bin"))

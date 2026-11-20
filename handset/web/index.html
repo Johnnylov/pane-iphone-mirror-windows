@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Mirror and control your iPhone screen on Windows over USB.">
-  <title>Pane — your iPhone on Windows</title>
+  <meta name="description" content="通过 USB 在 Windows 上查看并操控 iPhone。">
+  <title>Pane · iPhone 投屏</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <link rel="stylesheet" href="/app.css">
 </head>
@@ -15,58 +15,58 @@
         <img class="brand-mark" src="/logo.svg" alt="" aria-hidden="true">
         <div>
           <p class="brand-name">Pane</p>
-          <p class="brand-tag">Your iPhone, on Windows</p>
+          <p class="brand-tag">在 Windows 上操控 iPhone</p>
         </div>
       </div>
       <nav class="bar-actions">
-        <button type="button" class="ghost" id="toggle-compact" title="Compact window layout">Compact</button>
-        <button type="button" class="ghost" id="open-audio" title="AirPlay audio to PC">Audio</button>
-        <button type="button" class="ghost" id="toggle-guide" aria-expanded="false" aria-controls="run-guide">How to run</button>
-        <button type="button" class="ghost" id="refresh" title="Refresh connection">Refresh</button>
-        <button type="button" class="ghost ghost-icon" id="win-min" title="Minimize window">−</button>
-        <button type="button" class="ghost ghost-icon" id="win-close" title="Close window">✕</button>
+        <button type="button" class="ghost" id="toggle-compact" title="切换到紧凑窗口">紧凑模式</button>
+        <button type="button" class="ghost" id="open-audio" title="通过 AirPlay 在电脑上播放声音">音频</button>
+        <button type="button" class="ghost" id="toggle-guide" aria-expanded="false" aria-controls="run-guide">使用指南</button>
+        <button type="button" class="ghost" id="refresh" title="刷新连接状态">刷新</button>
+        <button type="button" class="ghost ghost-icon" id="win-min" title="最小化窗口">−</button>
+        <button type="button" class="ghost ghost-icon" id="win-close" title="关闭窗口">✕</button>
       </nav>
     </header>
 
     <main class="workspace" id="workspace">
       <div class="mirror-split">
-        <section class="mirror-pane" aria-label="iPhone screen">
+        <section class="mirror-pane" aria-label="iPhone 屏幕">
           <div class="compact-bar bar-drag" id="compact-bar" hidden>
             <div class="compact-traffic">
-              <button type="button" class="traffic-dot dot-red" id="compact-close" title="Exit compact layout"></button>
-              <button type="button" class="traffic-dot dot-yellow" id="compact-min" title="Minimize window"></button>
-              <button type="button" class="traffic-dot dot-green" id="compact-expand" title="Phone full screen"></button>
+              <button type="button" class="traffic-dot dot-red" id="compact-close" title="退出紧凑模式"></button>
+              <button type="button" class="traffic-dot dot-yellow" id="compact-min" title="最小化窗口"></button>
+              <button type="button" class="traffic-dot dot-green" id="compact-expand" title="全屏显示手机画面"></button>
             </div>
             <span class="compact-title" id="compact-device-name">iPhone</span>
-            <button type="button" class="compact-audio-btn" id="compact-audio" title="AirPlay audio to PC">🔊</button>
+            <button type="button" class="compact-audio-btn" id="compact-audio" title="通过 AirPlay 在电脑上播放声音">🔊</button>
           </div>
 
           <div class="audio-popup" id="audio-popup" hidden>
             <div class="audio-popup-content">
               <div class="audio-popup-header">
-                <span class="audio-popup-title">Play audio on your PC</span>
-                <button type="button" class="audio-popup-close" id="audio-popup-close" aria-label="Close">✕</button>
+                <span class="audio-popup-title">在电脑上播放手机声音</span>
+                <button type="button" class="audio-popup-close" id="audio-popup-close" aria-label="关闭">✕</button>
               </div>
               <div class="audio-popup-body">
-                <p class="audio-step"><span class="step-num">1</span> Open <strong>Control Center</strong> on the iPhone.</p>
-                <p class="audio-step"><span class="step-num">2</span> Tap the <strong>AirPlay</strong> icon on the media card.</p>
-                <p class="audio-step"><span class="step-num">3</span> Choose <strong>Pane Audio</strong> as the output.</p>
+                <p class="audio-step"><span class="step-num">1</span> 在 iPhone 上打开<strong>控制中心</strong>。</p>
+                <p class="audio-step"><span class="step-num">2</span> 点按媒体卡片上的 <strong>AirPlay</strong> 图标。</p>
+                <p class="audio-step"><span class="step-num">3</span> 选择 <strong>Pane Audio</strong> 作为音频输出设备。</p>
               </div>
               <p class="audio-popup-note fine" id="audio-popup-note" hidden></p>
-              <button type="button" class="primary audio-popup-ok" id="audio-popup-ok">Got it</button>
+              <button type="button" class="primary audio-popup-ok" id="audio-popup-ok">知道了</button>
             </div>
           </div>
 
           <div class="stage-meta">
-            <span class="pill" id="pill-connection">Checking…</span>
-            <span class="pill pill-muted" id="pill-device" hidden>No iPhone</span>
+            <span class="pill" id="pill-connection">正在检测…</span>
+            <span class="pill pill-muted" id="pill-device" hidden>未连接 iPhone</span>
           </div>
 
           <div class="iphone" id="phone-shell">
-            <button type="button" class="iphone-key key-action" data-btn="mute" title="Action / Mute" aria-label="Mute"></button>
-            <button type="button" class="iphone-key key-volup" data-btn="volume-up" title="Volume up" aria-label="Volume up"></button>
-            <button type="button" class="iphone-key key-voldown" data-btn="volume-down" title="Volume down" aria-label="Volume down"></button>
-            <button type="button" class="iphone-key key-side" data-btn="lock" title="Side button (lock)" aria-label="Side button"></button>
+            <button type="button" class="iphone-key key-action" data-btn="mute" title="操作按钮 / 静音" aria-label="静音"></button>
+            <button type="button" class="iphone-key key-volup" data-btn="volume-up" title="调高音量" aria-label="调高音量"></button>
+            <button type="button" class="iphone-key key-voldown" data-btn="volume-down" title="调低音量" aria-label="调低音量"></button>
+            <button type="button" class="iphone-key key-side" data-btn="lock" title="侧边按钮（锁屏）" aria-label="侧边按钮"></button>
 
             <div class="iphone-rim">
               <div class="iphone-bezel">
@@ -78,12 +78,12 @@
                         <circle cx="24" cy="38" r="2" fill="currentColor"/>
                       </svg>
                     </div>
-                    <p class="placeholder-title">Ready to mirror</p>
-                    <p class="placeholder-hint" id="placeholder-hint">Connect your iPhone, then press Start mirroring.</p>
+                    <p class="placeholder-title">准备投屏</p>
+                    <p class="placeholder-hint" id="placeholder-hint">连接 iPhone 后，点击「开始投屏」。</p>
                   </div>
-                  <iframe id="screen-view" class="screen-frame" title="iPhone screen" hidden src="about:blank"></iframe>
+                  <iframe id="screen-view" class="screen-frame" title="iPhone 屏幕" hidden src="about:blank"></iframe>
                   <div class="iphone-notch" aria-hidden="true"><span class="notch-cam"></span></div>
-                  <button type="button" class="fs-exit" id="fs-exit" title="Exit full screen (Esc)">Exit full screen</button>
+                  <button type="button" class="fs-exit" id="fs-exit" title="退出全屏（Esc）">退出全屏</button>
                 </div>
               </div>
             </div>
@@ -92,69 +92,69 @@
           <p class="stage-note" id="screen-note" role="status"></p>
         </section>
 
-        <aside class="control-pane" aria-label="Device and controls">
+        <aside class="control-pane" aria-label="设备与控制">
           <section class="card panel-start">
-            <div class="segmented" role="radiogroup" aria-label="Connection">
-              <button type="button" class="seg is-active" data-transport="usb" role="radio" aria-checked="true">Cable</button>
+            <div class="segmented" role="radiogroup" aria-label="连接方式">
+              <button type="button" class="seg is-active" data-transport="usb" role="radio" aria-checked="true">数据线</button>
               <button type="button" class="seg" data-transport="wifi" role="radio" aria-checked="false">Wi‑Fi</button>
             </div>
             <div class="wifi-row" id="wifi-row">
-              <span class="wifi-state" id="wifi-state">Wi‑Fi not set up</span>
-              <button type="button" class="ctl ctl-sm" id="wifi-pair">Set up Wi‑Fi</button>
+              <span class="wifi-state" id="wifi-state">尚未设置 Wi-Fi</span>
+              <button type="button" class="ctl ctl-sm" id="wifi-pair">设置 Wi-Fi</button>
             </div>
-            <button type="button" class="primary primary-block" id="show-screen">Start mirroring</button>
-            <button type="button" class="ghost ghost-block" id="restart-screen" hidden>Restart screen</button>
-            <button type="button" class="ghost ghost-block kb-toggle" id="kb-toggle" aria-pressed="true" hidden>⌨ Keyboard → iPhone: On</button>
-            <p class="control-hint" id="control-hint">Drag up from the bottom edge for Home; pause before letting go for the app switcher. While mirroring, typing goes straight to the iPhone.</p>
+            <button type="button" class="primary primary-block" id="show-screen">开始投屏</button>
+            <button type="button" class="ghost ghost-block" id="restart-screen" hidden>重启投屏</button>
+            <button type="button" class="ghost ghost-block kb-toggle" id="kb-toggle" aria-pressed="true" hidden>⌨ 键盘输入到 iPhone：开</button>
+            <p class="control-hint" id="control-hint">从屏幕底部上滑可返回主屏幕，上滑后稍停再松开可切换 App。投屏时可用电脑键盘在 iPhone 上输入。</p>
           </section>
 
           <section class="card panel-remote" id="remote-panel" hidden>
-            <h2 class="card-title">Gestures</h2>
+            <h2 class="card-title">手势</h2>
             <div class="control-grid">
-              <button type="button" class="ctl ctl-accent" data-gesture="home" title="Go to the Home Screen">Home</button>
-              <button type="button" class="ctl" data-gesture="switcher" title="Show recent apps">App switcher</button>
-              <button type="button" class="ctl" data-gesture="notifications" title="Swipe down from the top left">Notifications</button>
-              <button type="button" class="ctl" data-gesture="control" title="Swipe down from the top right">Control Center</button>
-              <button type="button" class="ctl" data-swipe="left" title="Swipe from right edge">← Swipe</button>
-              <button type="button" class="ctl" data-swipe="right" title="Swipe from left edge">Swipe →</button>
+              <button type="button" class="ctl ctl-accent" data-gesture="home" title="返回主屏幕">主屏幕</button>
+              <button type="button" class="ctl" data-gesture="switcher" title="显示最近使用的 App">App 切换器</button>
+              <button type="button" class="ctl" data-gesture="notifications" title="从左上角向下滑动">通知中心</button>
+              <button type="button" class="ctl" data-gesture="control" title="从右上角向下滑动">控制中心</button>
+              <button type="button" class="ctl" data-swipe="left" title="从右边缘向左滑动">← 左滑</button>
+              <button type="button" class="ctl" data-swipe="right" title="从左边缘向右滑动">右滑 →</button>
             </div>
 
-            <h2 class="card-title card-title-gap">Buttons</h2>
+            <h2 class="card-title card-title-gap">按键</h2>
             <div class="control-row">
-              <button type="button" class="ctl ctl-sm" data-btn="home">Home</button>
+              <button type="button" class="ctl ctl-sm" data-btn="home">主屏幕</button>
               <button type="button" class="ctl ctl-sm" data-btn="siri">Siri</button>
-              <button type="button" class="ctl ctl-sm" data-btn="lock">Lock</button>
-              <button type="button" class="ctl ctl-sm" data-btn="mute">Mute</button>
+              <button type="button" class="ctl ctl-sm" data-btn="lock">锁屏</button>
+              <button type="button" class="ctl ctl-sm" data-btn="mute">静音</button>
             </div>
             <div class="control-row control-row-2">
-              <button type="button" class="ctl ctl-sm" data-btn="volume-up">Vol +</button>
-              <button type="button" class="ctl ctl-sm" data-btn="volume-down">Vol −</button>
+              <button type="button" class="ctl ctl-sm" data-btn="volume-up">音量 +</button>
+              <button type="button" class="ctl ctl-sm" data-btn="volume-down">音量 −</button>
             </div>
 
             <div class="view-tools">
-              <span class="view-label">View</span>
+              <span class="view-label">视图</span>
               <div class="zoom-cluster">
-                <button type="button" class="ctl ctl-icon" id="zoom-out" title="Zoom out">−</button>
-                <button type="button" class="ctl ctl-icon" id="zoom-reset" title="Fit">100%</button>
-                <button type="button" class="ctl ctl-icon" id="zoom-in" title="Zoom in">+</button>
+                <button type="button" class="ctl ctl-icon" id="zoom-out" title="缩小">−</button>
+                <button type="button" class="ctl ctl-icon" id="zoom-reset" title="适应窗口">100%</button>
+                <button type="button" class="ctl ctl-icon" id="zoom-in" title="放大">+</button>
               </div>
               <div class="rotate-cluster">
-                <button type="button" class="ctl ctl-icon" id="rotate-ccw" title="Rotate counter-clockwise">↺</button>
-                <button type="button" class="ctl ctl-icon" id="rotate-cw" title="Rotate clockwise">↻</button>
+                <button type="button" class="ctl ctl-icon" id="rotate-ccw" title="逆时针旋转">↺</button>
+                <button type="button" class="ctl ctl-icon" id="rotate-cw" title="顺时针旋转">↻</button>
               </div>
-              <button type="button" class="ctl ctl-full" id="compact-btn" title="Compact window layout">Compact window</button>
-              <button type="button" class="ctl ctl-full" id="fullscreen" title="Full screen touch view (Esc to exit)">⛶ Full screen</button>
+              <button type="button" class="ctl ctl-full" id="compact-btn" title="切换到紧凑窗口">紧凑窗口</button>
+              <button type="button" class="ctl ctl-full" id="fullscreen" title="全屏操控（按 Esc 退出）">⛶ 全屏</button>
             </div>
           </section>
 
           <section class="card" id="device-card">
-            <h2 class="card-title">Device</h2>
+            <h2 class="card-title">设备</h2>
             <ul class="device-list" id="devices"></ul>
             <div class="device-detail" id="detail" hidden></div>
           </section>
 
           <details class="card card-details">
-            <summary>Connection details</summary>
+            <summary>连接详情</summary>
             <dl class="kv" id="status"></dl>
             <p class="fine" id="status-note"></p>
           </details>
@@ -164,55 +164,52 @@
 
     <section class="guide" id="run-guide" hidden>
       <div class="guide-inner">
-        <h2>How to run Pane</h2>
-        <p class="guide-lead">Open-source mirroring for Windows. Everything runs on your PC; the phone stays on USB.</p>
+        <h2>Pane 使用指南</h2>
+        <p class="guide-lead">用数据线连接 iPhone，在这台 Windows 电脑上投屏。首次使用请先完成手机设置。</p>
 
         <div class="guide-grid">
           <article class="guide-step">
             <span class="step-num">1</span>
-            <h3>Prerequisites</h3>
+            <h3>使用条件</h3>
             <ul>
-              <li>Windows 10 or 11</li>
-              <li>Python 3.10+</li>
-              <li><a href="https://apps.microsoft.com/store/detail/apple-devices/9np83t1wptph" rel="noopener">Apple Devices</a> from Microsoft Store</li>
-              <li>USB‑C data cable (not charge‑only)</li>
+              <li>64 位 Windows 10 或 11</li>
+              <li>iOS 或 iPadOS 27 及以上版本可显示实时画面</li>
+              <li><a href="https://apps.microsoft.com/store/detail/apple-devices/9np83lwlpz9k" rel="noopener">Apple 设备</a>（可从 Microsoft Store 安装）</li>
+              <li>支持数据传输的 USB 线</li>
             </ul>
           </article>
 
           <article class="guide-step">
             <span class="step-num">2</span>
-            <h3>Install</h3>
-            <pre class="code"><code>git clone &lt;your-repo-url&gt;
-cd handset
-pip install pymobiledevice3</code></pre>
-            <p class="fine">On Windows, if <code>pip install pymobiledevice3</code> fails on native wheels, install the package without optional firmware tools, then run from this repo (it includes small shims).</p>
+            <h3>启动中文版</h3>
+            <p class="fine">下载中文版后，双击 <code>Pane.exe</code>。便携版已包含 Python。</p>
           </article>
 
           <article class="guide-step">
             <span class="step-num">3</span>
-            <h3>Start the server</h3>
+            <h3>从源码运行（可选）</h3>
             <pre class="code"><code>python -m handset.server</code></pre>
-            <p class="fine">Open <a href="http://127.0.0.1:8765">http://127.0.0.1:8765</a> in your browser. Keep the terminal open.</p>
+            <p class="fine">安装项目依赖后，在项目根目录运行上面的命令。在浏览器中打开 <a href="http://127.0.0.1:8765">http://127.0.0.1:8765</a>，并保持终端开启。</p>
           </article>
 
           <article class="guide-step">
             <span class="step-num">4</span>
-            <h3>iPhone setup</h3>
+            <h3>设置 iPhone</h3>
             <ul>
-              <li>Plug in and unlock the iPhone</li>
-              <li>Tap <strong>Trust</strong> on the phone</li>
-              <li>Enable <strong>Settings → Privacy &amp; Security → Developer Mode</strong> and restart</li>
-              <li>Press <strong>Start mirroring</strong> here (first run may mount a developer image; keep the phone unlocked)</li>
+              <li>用数据线连接并解锁 iPhone</li>
+              <li>手机询问是否信任这台电脑时，点按<strong>信任</strong></li>
+              <li>打开<strong>设置 → 隐私与安全性 → 开发者模式</strong>，按提示重启并确认</li>
+              <li>回到电脑，点击<strong>开始投屏</strong>。首次连接可能需要挂载开发者映像，请保持手机解锁</li>
             </ul>
           </article>
         </div>
 
-        <p class="guide-footer fine">Pane uses the same display tunnel as Xcode Device Hub, over USB or Wi‑Fi. It does not run iOS on Windows—it streams and controls your physical iPhone.</p>
+        <p class="guide-footer fine">Pane 使用与 Xcode Device Hub 相同的显示通道，通过 USB 或 Wi-Fi 传输真机画面和操控指令。</p>
       </div>
     </section>
 
     <footer class="foot">
-      <p>Pane · MIT · Mirror and control your iPhone over USB or Wi‑Fi</p>
+      <p>Pane · GPL-3.0 · 通过 USB 或 Wi-Fi 投屏并操控 iPhone</p>
     </footer>
   </div>
   <script src="/keys.js"></script>

@@ -13,10 +13,10 @@ VSVersionInfo(
     StringFileInfo(
       [
         StringTable(
-          "040904B0",
+          "080404B0",
           [
             StringStruct("CompanyName", "Pane"),
-            StringStruct("FileDescription", "Pane - your iPhone on Windows"),
+            StringStruct("FileDescription", "Pane · iPhone 投屏中文版"),
             StringStruct("FileVersion", "1.0.2"),
             StringStruct("InternalName", "Pane"),
             StringStruct("LegalCopyright", "GPL-3.0-or-later"),
@@ -27,6 +27,6 @@ VSVersionInfo(
         )
       ]
     ),
-    VarFileInfo([VarStruct("Translation", [1033, 1200])]),
+    VarFileInfo([VarStruct("Translation", [2052, 1200])]),
   ],
 )

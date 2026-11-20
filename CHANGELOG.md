@@ -1,32 +1,22 @@
-# Changelog
+# 更新记录
 
-## 2026-11-19
+## 1.0.2 简体中文版 · 2026-11-20
 
-Windows build: Pane 1.0.2.
+- 主界面、紧凑模式、全屏视图、屏幕阅读器标签和操作指南均使用简体中文。
+- 翻译了 USB 与 Wi-Fi 配对、设备状态、开发者模式、视频解码和重连提示。第三方组件返回的原始错误保留原文。
+- 提供中文版 Windows 便携程序和中文使用说明。页脚的许可证标注已与仓库中的 GPL-3.0 许可证一致。
 
-### Fixes
+## 上游 1.0.2 · 2026-11-19
 
-- Wi-Fi discovery keeps a Windows mobile hotspot. That hotspot is a Wi-Fi Direct adapter with a private address, usually `192.168.137.1`, and it was being skipped with the idle Miracast adapters.
-- Wi-Fi tunnel setup returns the `TunnelProvider` type that pymobiledevice3 11.59 expects, and still returns the older pair on earlier releases.
+- Wi-Fi 设备发现会保留 Windows 移动热点使用的 Wi-Fi Direct 网卡。此前带私有地址（通常为 `192.168.137.1`）的热点网卡可能与空闲的 Miracast 网卡一起被跳过。
+- Wi-Fi 通道可返回 pymobiledevice3 11.59 所需的 `TunnelProvider` 类型，同时兼容早期版本的返回格式。
 
-## 2026-11-17
+## 上游 1.0.1 · 2026-11-17
 
-Windows build: Pane 1.0.1.
-
-### Requirements
-
-- Live video requires **iOS / iPadOS 27 or newer**. iOS 26 and older can connect, but the phone does not send picture frames.
-- The README states that minimum in the prerequisites.
-
-### Fixes
-
-- The phone frame fits the window instead of being stuck at a tall minimum height, so the bottom of the screen is not clipped.
-- Landscape video, and the rotate buttons, turn the phone frame with the picture.
-- Wi-Fi discovery skips VPN and virtual adapters, prefers the real Wi-Fi address, and explains when the iPhone is not broadcasting or is still on the USB cable.
-- Bonjour queries forward extra arguments so newer pymobiledevice3 does not raise `TypeError` on `send_query_all`.
-- The local UI server speaks HTTP/1.1 and returns a JSON error if a page request fails.
-
-### Added
-
-- Optional AirPlay audio. If `handset/bin/shairport.exe` (Shairport4w, GPL-3.0) is present, Pane starts it as "Pane Audio" and shows connection status. A missing binary does not stop the app. See `handset/bin/NOTICE.txt`.
-- Compact window layout, with minimize, close, drag, and resize through the Chrome or Edge app window.
+- 明确实时画面需要 iOS 或 iPadOS 27 及以上版本。较早版本可以连接，但无法传回视频帧。
+- 手机边框随窗口高度调整，避免底部画面被裁切。横屏视频和旋转按钮现在会让边框与画面同步旋转。
+- Wi-Fi 发现优先使用实际无线网卡并跳过 VPN、虚拟网卡。手机未广播或仍通过 USB 连接时提供相应提示。
+- Bonjour 查询会转发额外参数，避免新版 pymobiledevice3 在 `send_query_all` 中触发 `TypeError`。
+- 本地界面服务使用 HTTP/1.1，页面请求失败时返回 JSON 错误。
+- 支持可选的 AirPlay 音频。提供 `handset/bin/shairport.exe`（Shairport4w，GPL-3.0）后，Pane 会启动名为「Pane Audio」的接收器并显示连接状态。详见[组件说明](handset/bin/NOTICE.txt)。
+- 新增紧凑模式，支持通过 Chrome 或 Edge 应用窗口进行最小化、关闭、拖动和调整大小。

@@ -6,9 +6,9 @@ const KNOWN_IOS_MAJOR = (() => {
   return Number.isFinite(n) ? n : null;
 })();
 const NO_PICTURE_IOS26 =
-  "Live video needs iOS 27 or later. This iPhone can connect, but it does not send a picture on this iOS version.";
+  "实时投屏需要 iOS 27 或更高版本。这台 iPhone 可以连接，但当前系统版本无法输出实时画面。";
 const NO_PICTURE_UNKNOWN =
-  "No picture yet. Keep the iPhone unlocked and press Restart screen. If this phone is on iOS 26 or older, Apple does not send live video until iOS 27.";
+  "还没有收到画面。请保持 iPhone 解锁，然后点击「重启投屏」。iOS 26 及更早版本无法输出实时画面。";
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 const statusEl = document.getElementById("mirror-status");
@@ -266,7 +266,7 @@ async function fetchCodecWithRetry() {
       }
       const info = await resp.json();
       if (!info.codec || !info.description) {
-        lastErr = "waiting for video parameters";
+        lastErr = "正在等待视频参数";
         continue;
       }
       const description = Uint8Array.from(atob(info.description), (c) => c.charCodeAt(0));
@@ -275,7 +275,7 @@ async function fetchCodecWithRetry() {
       lastErr = err.message || String(err);
     }
   }
-  throw new Error(lastErr || "codec unreachable");
+  throw new Error(lastErr || "无法获取视频编码信息");
 }
 
 function drawFrame(f) {
@@ -312,7 +312,7 @@ function drawPending() {
   lastFrameLandscape = landscape;
   try {
     drawFrame(f);
-    if (frameCount === 1) setStatus("Live", "ok");
+    if (frameCount === 1) setStatus("实时画面", "ok");
   } catch (_) {}
   if (lastFrame && lastFrame !== f) {
     try {
@@ -323,7 +323,7 @@ function drawPending() {
 }
 
 async function run(generation) {
-  setStatus("Connecting to stream…");
+  setStatus("正在连接视频流…");
   frameCount = 0;
   const startedAt = performance.now();
   const watchdog = window.setInterval(() => {
@@ -350,7 +350,7 @@ async function run(generation) {
   const decoderConfig = { codec, description, optimizeForLatency: true };
   const support = await VideoDecoder.isConfigSupported({ codec, description });
   if (!support.supported) {
-    setStatus("This browser cannot decode the iPhone video stream.", "warn");
+    setStatus("当前浏览器无法解码 iPhone 的视频流。", "warn");
     return;
   }
 
@@ -385,14 +385,14 @@ async function run(generation) {
 
   let decoder = buildDecoder();
   decoder.configure(decoderConfig);
-  setStatus("Waiting for video…");
+  setStatus("正在等待画面…");
 
   let resp = null;
   const streamDelays = [300, 600, 1200, 2000, 3000, 5000, 8000];
   for (let a = 0; a <= streamDelays.length; a++) {
     if (generation !== runGeneration) return;
     if (a > 0) {
-      setStatus(`Waiting for video stream (retry ${a})…`);
+      setStatus(`正在等待视频流（第 ${a} 次重试）…`);
       await new Promise((r) => setTimeout(r, streamDelays[a - 1]));
       if (a === 2) {
         await fetch(`${MIRROR}/pli`, { method: "POST", cache: "no-store" }).catch(() => {});
@@ -405,16 +405,16 @@ async function run(generation) {
         break;
       }
       if (r.status === 503) {
-        setStatus("Stream starting on the iPhone…");
+        setStatus("iPhone 正在启动视频流…");
         continue;
       }
-      setStatus(`Stream error (HTTP ${r.status})`, "warn");
+      setStatus(`视频流出错（HTTP ${r.status}）`, "warn");
     } catch (err) {
-      setStatus(err.message || "Stream unreachable", "warn");
+      setStatus(err.message || "无法连接视频流", "warn");
     }
   }
   if (!resp || generation !== runGeneration) {
-    setStatus("Cannot reach the video stream. Press Restart screen.", "warn");
+    setStatus("无法连接视频流。请点击「重启投屏」。", "warn");
     return;
   }
 
@@ -482,7 +482,7 @@ async function run(generation) {
     }
   }
   if (generation === runGeneration) {
-    setStatus("Stream ended — press Restart screen", "warn");
+    setStatus("视频流已结束，请点击「重启投屏」", "warn");
   }
 }
 
@@ -507,7 +507,7 @@ function beginRun() {
   }
   frameCount = 0;
   run(generation).catch((err) => {
-    setStatus(err.message || "Mirror failed", "warn");
+    setStatus(err.message || "投屏失败", "warn");
   });
 }
 

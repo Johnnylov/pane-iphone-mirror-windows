@@ -16,17 +16,17 @@ from handset.mux import MuxError, list_devices
 from handset.wifi import wifi_paired_udids, wifi_tunnel
 
 DEVELOPER_MODE_MESSAGE = (
-    "The picture stays black because Developer Mode is off. On the iPhone open Settings, "
-    "Privacy & Security, Developer Mode, turn it on, and let the phone restart. After it boots, "
-    "unlock it, tap Turn On, then press Show screen again."
+    "开发者模式已关闭，暂时无法显示画面。请在 iPhone 上打开"
+    "「设置 → 隐私与安全性 → 开发者模式」，开启后按提示重启。"
+    "重启后解锁手机，点按「打开」，再回到电脑点击「开始投屏」。"
 )
 
 MIN_IOS_MAJOR_FOR_VIDEO = 27
 
 IOS_VIDEO_VERSION_MESSAGE = (
-    "Live video mirroring needs iOS 27 or later. This iPhone does not send a display video "
-    "stream on older iOS — control can still work, but the preview stays black. Update to iOS 27+ "
-    "for a picture."
+    "实时投屏需要 iOS 27 或更高版本。这台 iPhone 在旧版系统上无法输出实时画面。"
+    "键鼠控制可能仍然可用，但预览会保持黑屏。"
+    "要查看画面，请使用 iOS 27 或更高版本。"
 )
 
 VIEW_URL = "http://127.0.0.1:8766/"
@@ -67,10 +67,10 @@ def restart_screen(udid: str | None = None) -> dict:
     with _LOCK:
         running = _STATE.get("phase") == "running"
     if running:
-        return _set(note="Stream restarted. If the picture is still black, press Restart screen again.")
+        return _set(note="投屏已重启。如果仍然黑屏，请再次点击「重启投屏」。")
     if chosen:
         return start_screen(chosen, _STATE.get("transport") or "auto")
-    return _set(error="Connect the iPhone first, then start mirroring.")
+    return _set(error="请先连接 iPhone，再点击「开始投屏」。")
 
 
 def start_screen(udid: str | None, transport: str = "auto") -> dict:
@@ -79,24 +79,24 @@ def start_screen(udid: str | None, transport: str = "auto") -> dict:
     chosen = (udid or "").strip() or _only_udid(usb, wifi, transport)
     if not chosen:
         if transport == "wifi":
-            return _set(phase="idle", udid=None, url=None, error="Set up Wi-Fi once with the cable plugged in.")
-        return _set(phase="idle", udid=None, url=None, error="Connect the iPhone first.")
+            return _set(phase="idle", udid=None, url=None, error="请插入数据线，先完成一次 Wi-Fi 配对。")
+        return _set(phase="idle", udid=None, url=None, error="请先连接 iPhone。")
 
     if transport == "auto":
         transport = "usb" if chosen in usb else "wifi"
     if transport == "usb" and chosen not in usb:
-        return _set(phase="error", udid=chosen, url=None, error="The iPhone is not on the cable. Plug it in or choose Wi-Fi.")
+        return _set(phase="error", udid=chosen, url=None, error="未检测到有线连接。请插入数据线或选择 Wi-Fi。")
     if transport == "wifi" and chosen not in wifi:
-        return _set(phase="error", udid=chosen, url=None, error="Set up Wi-Fi once with the cable plugged in.")
+        return _set(phase="error", udid=chosen, url=None, error="请插入数据线，先完成一次 Wi-Fi 配对。")
     if transport == "wifi" and chosen in usb:
         return _set(
             phase="error",
             udid=chosen,
             url=None,
             error=(
-                "The iPhone is still plugged in, so it is not announcing itself on Wi-Fi. "
-                "Choose Cable and press Start mirroring. For Wi-Fi, unplug the cable, keep the phone unlocked "
-                "on the same Wi-Fi, then start again."
+                "iPhone 仍通过数据线连接，尚未通过 Wi-Fi 广播。"
+                "要有线投屏，请选择「数据线」并点击「开始投屏」。要使用 Wi-Fi，请拔下数据线，"
+                "保持手机解锁并连接到与电脑相同的 Wi-Fi，然后重新开始投屏。"
             ),
             transport="wifi",
         )
@@ -119,7 +119,7 @@ def start_screen(udid: str | None, transport: str = "auto") -> dict:
     with _LOCK:
         if _STATE["phase"] in {"starting", "running"} and _STATE["udid"] == chosen:
             return dict(_STATE)
-        note = "Looking for the iPhone on Wi-Fi…" if transport == "wifi" else None
+        note = "正在通过 Wi-Fi 查找 iPhone…" if transport == "wifi" else None
         _STATE.update(
             phase="starting",
             udid=chosen,
@@ -137,7 +137,7 @@ def start_screen(udid: str | None, transport: str = "auto") -> dict:
 def _run(udid: str, transport: str) -> None:
     try:
         asyncio.run(_serve(udid, transport))
-        _set(phase="idle", udid=udid, url=None, error="The screen stream stopped.")
+        _set(phase="idle", udid=udid, url=None, error="投屏已停止。")
     except Exception as error:
         _set(phase="error", udid=udid, url=None, error=_plain(error))
 
@@ -164,10 +164,10 @@ async def _serve(udid: str, transport: str) -> None:
                 return
             if attempt:
                 raise RuntimeError(
-                    "The developer image mounted, but the iPhone still offers no display service. "
-                    "Unplug it, plug it back in, and press Show screen again."
+                    "开发者映像已挂载，但 iPhone 尚未提供显示服务。"
+                    "请重新插拔数据线，然后点击「开始投屏」。"
                 )
-            _set(note="Mounting the developer image on the iPhone. This downloads it the first time.")
+            _set(note="正在 iPhone 上挂载开发者映像。首次使用需要下载映像。")
             await auto_mount(rsd)
 
 
@@ -244,17 +244,17 @@ def _plain(error: Exception) -> str:
     if name == "WifiNotFoundError":
         return text
     if name in {"ConnectionFailedToUsbmuxdError", "MuxError"} or "27015" in text or "usbmux" in text.lower():
-        return "Apple Mobile Device Service is not running. Install Apple Devices, reconnect the iPhone, and tap Trust."
+        return "Apple 移动设备服务未运行。请安装「Apple 设备」，重新连接 iPhone 并点按「信任」。"
     if name == "UserspaceTunnelUnavailableError":
-        return "This phone did not open the display tunnel. It needs iOS 17.4 or later, Trust, and Developer Mode."
+        return "无法建立显示通道。通道需要 iOS 17.4 或更高版本。请确认已信任电脑并开启开发者模式。"
     if "CoreDeviceProxy" in text or name == "InvalidServiceError":
-        return "The phone did not offer its display tunnel. Turn on Developer Mode, unlock the phone, and tap Trust."
+        return "手机没有提供显示通道。请开启开发者模式，解锁手机并点按「信任」。"
     if name == "DeviceNotFoundError":
-        return "The iPhone is not on the cable. Plug it in, unlock it, and press Show screen again."
+        return "未通过数据线检测到 iPhone。请连接并解锁手机，再点击「开始投屏」。"
     if name in {"DeveloperModeIsNotEnabledError", "DeveloperModeError"}:
         return DEVELOPER_MODE_MESSAGE
     if "PasswordProtected" in text or "locked" in text.lower():
-        return "Unlock the iPhone and keep it unlocked, then press Show screen again."
+        return "请解锁 iPhone 并保持解锁，再点击「开始投屏」。"
     if "PairingDialog" in text or "Trust" in text:
-        return "Unlock the iPhone and tap Trust, then show the screen again."
+        return "请解锁 iPhone 并点按「信任」，再点击「开始投屏」。"
     return text

@@ -57,26 +57,26 @@ function setTransport(value, reload = true) {
 
 function renderWifi() {
   const ready = selectedUdid ? wifiPaired.includes(selectedUdid) : wifiPaired.length > 0;
-  wifiState.textContent = ready ? "✓ Wi‑Fi ready" : "Wi‑Fi not set up";
+  wifiState.textContent = ready ? "✓ Wi-Fi 已就绪" : "尚未设置 Wi-Fi";
   wifiState.classList.toggle("ok", ready);
   wifiPair.hidden = ready;
   wifiPair.disabled = !usbConnected;
-  wifiPair.title = usbConnected ? "One-time setup over the cable" : "Plug in the cable once to set up Wi‑Fi";
+  wifiPair.title = usbConnected ? "用数据线完成首次配对" : "请先插入数据线，完成 Wi-Fi 配对";
 }
 
 async function setUpWifi() {
   wifiPair.disabled = true;
-  wifiPair.textContent = "Setting up…";
+  wifiPair.textContent = "正在设置…";
   try {
     const result = await postJson("/api/wifi/pair", { udid: selectedUdid });
-    if (!result.ok) throw new Error(result.error || "Wi‑Fi setup failed.");
-    screenNote.textContent = "Wi‑Fi is set up. You can unplug the cable and choose Wi‑Fi.";
+    if (!result.ok) throw new Error(result.error || "Wi-Fi 设置失败。");
+    screenNote.textContent = "Wi-Fi 配对完成。现在可以拔下数据线，选择 Wi-Fi 连接。";
     screenNote.className = "";
   } catch (error) {
     screenNote.textContent = error.message;
     screenNote.className = "warn";
   } finally {
-    wifiPair.textContent = "Set up Wi‑Fi";
+    wifiPair.textContent = "设置 Wi-Fi";
     load();
   }
 }
@@ -107,7 +107,7 @@ async function load() {
     renderScreen(state.screen);
     renderPills(state);
   } catch (error) {
-    setPill(pillConnection, "Offline", "bad");
+    setPill(pillConnection, "已离线", "bad");
     statusNote.textContent = error.message;
     statusNote.className = "warn";
   } finally {
@@ -120,21 +120,21 @@ function renderPills(state) {
   const connected = (state.devices || []).length > 0;
   const overWifi = transport === "wifi" && wifiPaired.length > 0;
   if (state.screen?.phase === "running") {
-    setPill(pillConnection, state.screen.transport === "wifi" ? "Mirroring · Wi‑Fi" : "Mirroring", "ok");
+    setPill(pillConnection, state.screen.transport === "wifi" ? "投屏中 · Wi-Fi" : "投屏中", "ok");
   } else if (overWifi) {
-    setPill(pillConnection, "Wi‑Fi ready", "ok");
+    setPill(pillConnection, "Wi-Fi 已就绪", "ok");
   } else if (state.error) {
-    setPill(pillConnection, "Error", "bad");
+    setPill(pillConnection, "连接出错", "bad");
   } else if (!driver.ready) {
-    setPill(pillConnection, "Install Apple Devices", "warn");
+    setPill(pillConnection, "请安装 Apple 设备", "warn");
   } else if (!connected) {
-    setPill(pillConnection, "Plug in iPhone", "warn");
+    setPill(pillConnection, "请连接 iPhone", "warn");
   } else if (state.developerMode === false) {
-    setPill(pillConnection, "Developer Mode off", "warn");
+    setPill(pillConnection, "开发者模式已关闭", "warn");
   } else if (state.screen?.phase === "running") {
-    setPill(pillConnection, "Mirroring", "ok");
+    setPill(pillConnection, "投屏中", "ok");
   } else {
-    setPill(pillConnection, "Ready", "ok");
+    setPill(pillConnection, "已就绪", "ok");
   }
 
   if (!connected) {
@@ -144,7 +144,7 @@ function renderPills(state) {
   }
   pillDevice.hidden = false;
   const count = state.devices.length;
-  pillDevice.textContent = count === 1 ? "1 device · USB" : `${count} devices`;
+  pillDevice.textContent = count === 1 ? "1 台设备 · USB" : `${count} 台设备`;
 }
 
 function setPill(el, text, tone) {
@@ -156,28 +156,28 @@ function renderStatus(state) {
   const library = state.library || {};
   const driver = state.driver || {};
   statusList.replaceChildren(
-    ...row("Client", library.ready ? "ready" : "missing", library.ready),
-    ...row("USB service", driver.ready ? "running" : "missing", driver.ready),
-    ...row("Developer Mode", state.developerMode === false ? "off" : state.developerMode ? "on" : "—", state.developerMode !== false),
+    ...row("客户端", library.ready ? "已就绪" : "未安装", library.ready),
+    ...row("USB 服务", driver.ready ? "运行中" : "不可用", driver.ready),
+    ...row("开发者模式", state.developerMode === false ? "关" : state.developerMode ? "开" : "—", state.developerMode !== false),
   );
   const connected = (state.devices || []).length > 0;
   if (state.developerMode === false) {
     statusNote.textContent =
-      "Turn on Developer Mode on the iPhone (Settings → Privacy & Security), restart, then mirror again.";
-    placeholderHint.textContent = "Developer Mode must be on before mirroring works.";
+      "在 iPhone 的「设置 → 隐私与安全性」中打开「开发者模式」，按提示重启并确认后再投屏。";
+    placeholderHint.textContent = "请先在 iPhone 上开启开发者模式。";
     return;
   }
   statusNote.textContent =
     state.error ||
-    (connected ? "Device connected. Press Start mirroring." : driver.detail) ||
+    (connected ? "已连接设备。点击「开始投屏」。" : driver.detail) ||
     "";
   statusNote.className = state.error || !driver.ready ? "warn" : "";
   if (!connected && (state.wifi?.paired || []).length) {
-    statusNote.textContent = "No cable. Choose Wi‑Fi, keep the iPhone unlocked on the same network, and press Start mirroring.";
+    statusNote.textContent = "未连接数据线。请选择 Wi-Fi，让 iPhone 保持解锁并连接同一网络，然后点击「开始投屏」。";
     statusNote.className = "";
-    placeholderHint.textContent = "No cable needed — choose Wi‑Fi and press Start mirroring.";
+    placeholderHint.textContent = "选择 Wi-Fi 后，点击「开始投屏」即可无线连接。";
   } else if (!connected) {
-    placeholderHint.textContent = "Connect your iPhone with a data cable, unlock it, and tap Trust.";
+    placeholderHint.textContent = "用数据线连接 iPhone，解锁后点按「信任」。";
   }
 }
 
@@ -189,7 +189,7 @@ function renderDevices(list) {
   if (!list.length) {
     const item = document.createElement("li");
     item.className = "empty";
-    item.textContent = "No iPhone detected.";
+    item.textContent = "未检测到 iPhone。";
     devicesEl.append(item);
     selectedUdid = null;
     return;
@@ -223,7 +223,7 @@ function renderDevices(list) {
 
 async function openDevice(udid) {
   detail.hidden = false;
-  detail.textContent = "Reading device…";
+  detail.textContent = "正在读取设备信息…";
   try {
     const device = await getJson(`/api/devices/${encodeURIComponent(udid)}`);
     renderDetail(device);
@@ -250,9 +250,9 @@ function renderDetail(device) {
   const list = document.createElement("dl");
   list.className = "kv";
   const labels = {
-    ProductType: "Model",
+    ProductType: "机型",
     ProductVersion: "iOS",
-    BuildVersion: "Build",
+    BuildVersion: "系统构建号",
   };
   for (const [key, label] of Object.entries(labels)) {
     if (device.info && device.info[key] != null) list.append(...row(label, String(device.info[key]), true));
@@ -270,9 +270,9 @@ function renderScreen(screen) {
     remotePanel.hidden = false;
     restartScreen.hidden = false;
     kbToggle.hidden = false;
-    screenNote.textContent = "Mirroring — typing on your keyboard goes to the iPhone.";
+    screenNote.textContent = "正在投屏。现在可以用电脑键盘在 iPhone 上输入。";
     screenNote.className = "";
-    showScreen.textContent = "Mirroring…";
+    showScreen.textContent = "正在投屏…";
     showScreen.disabled = true;
     const mirrorSrc = mirrorPageUrl(screen);
     const src = screenView.getAttribute("src") || "";
@@ -282,7 +282,7 @@ function renderScreen(screen) {
     screenView.hidden = false;
     const compactName = document.querySelector("#compact-device-name");
     if (compactName && screen.transport) {
-      compactName.textContent = `iPhone (${screen.transport === "wifi" ? "Wi-Fi" : "Cable"})`;
+      compactName.textContent = `iPhone (${screen.transport === "wifi" ? "Wi-Fi" : "数据线"})`;
     }
     return;
   }
@@ -294,14 +294,14 @@ function renderScreen(screen) {
   kbToggle.hidden = true;
   screenView.hidden = true;
   screenView.src = "about:blank";
-  showScreen.textContent = "Start mirroring";
+  showScreen.textContent = "开始投屏";
   showScreen.disabled = false;
 
   if (screen.phase === "starting") {
-    screenNote.textContent = screen.note || "Starting stream… keep the iPhone unlocked.";
+    screenNote.textContent = screen.note || "正在启动投屏，请保持 iPhone 解锁。";
     screenNote.className = "";
     showScreen.disabled = true;
-    showScreen.textContent = "Connecting…";
+    showScreen.textContent = "正在连接…";
     return;
   }
   if (screen.error) {
@@ -315,7 +315,7 @@ function renderScreen(screen) {
 
 async function showPhone() {
   showScreen.disabled = true;
-  showScreen.textContent = "Connecting…";
+  showScreen.textContent = "正在连接…";
   try {
     renderScreen(await postJson("/api/screen", { udid: selectedUdid, transport }));
     watchScreen();
@@ -323,7 +323,7 @@ async function showPhone() {
   } catch (error) {
     screenNote.textContent = error.message;
     screenNote.className = "warn";
-    showScreen.textContent = "Start mirroring";
+    showScreen.textContent = "开始投屏";
     showScreen.disabled = false;
   }
 }
@@ -358,7 +358,7 @@ function row(label, value, ok) {
 async function getJson(url) {
   const response = await fetch(url);
   const body = await response.json();
-  if (!response.ok) throw new Error(body.error || `Request failed (${response.status})`);
+  if (!response.ok) throw new Error(body.error || `请求失败（HTTP ${response.status}）`);
   return body;
 }
 
@@ -369,7 +369,7 @@ async function postJson(url, payload) {
     body: JSON.stringify(payload),
   });
   const body = await response.json();
-  if (!response.ok) throw new Error(body.error || `Request failed (${response.status})`);
+  if (!response.ok) throw new Error(body.error || `请求失败（HTTP ${response.status}）`);
   return body;
 }
 
@@ -397,16 +397,16 @@ function reloadMirrorIframe() {
 
 async function restartMirror() {
   restartScreen.disabled = true;
-  screenNote.textContent = "Restarting screen… keep the iPhone unlocked.";
+  screenNote.textContent = "正在重启投屏，请保持 iPhone 解锁。";
   screenNote.className = "";
   try {
     await postJson("/api/screen/restart", { udid: selectedUdid });
     await new Promise((r) => setTimeout(r, 1500));
     reloadMirrorIframe();
-    screenNote.textContent = "Restart sent — waiting for picture…";
+    screenNote.textContent = "已请求重启投屏，正在等待画面…";
     window.setTimeout(() => {
       if (workspace.classList.contains("is-live")) {
-        screenNote.textContent = "Mirroring — use Restart screen if the picture stays black.";
+        screenNote.textContent = "正在投屏。如果持续黑屏，请点击「重启投屏」。";
       }
     }, 4000);
   } catch (error) {
@@ -497,7 +497,7 @@ window.handsetKeyboardOn = true;
 function setKeyboard(on) {
   window.handsetKeyboardOn = on;
   kbToggle.setAttribute("aria-pressed", String(on));
-  kbToggle.textContent = `⌨ Keyboard → iPhone: ${on ? "On" : "Off"}`;
+  kbToggle.textContent = `⌨ 键盘输入到 iPhone：${on ? "开" : "关"}`;
   kbToggle.classList.toggle("is-on", on);
   if (!on) keyboard.releaseAll();
 }
@@ -525,11 +525,11 @@ function setCompact(enable) {
   const compactBtn = document.querySelector("#compact-btn");
   const compactBar = document.querySelector("#compact-bar");
   if (toggleCompact) {
-    toggleCompact.textContent = on ? "Expanded" : "Compact";
-    toggleCompact.title = on ? "Return to full layout" : "Compact window layout";
+    toggleCompact.textContent = on ? "展开窗口" : "紧凑模式";
+    toggleCompact.title = on ? "返回完整布局" : "切换到紧凑窗口";
   }
   if (compactBtn) {
-    compactBtn.textContent = on ? "Expanded layout" : "Compact window";
+    compactBtn.textContent = on ? "完整布局" : "紧凑窗口";
   }
   if (compactBar) compactBar.hidden = !on;
   const size = on ? COMPACT_SIZE : STANDARD_SIZE;
@@ -545,17 +545,17 @@ async function refreshAirPlayUi() {
     btn.classList.toggle("is-connected", Boolean(data.connected));
     btn.classList.toggle("is-unavailable", !data.available);
     if (!data.available) {
-      btn.title = "AirPlay receiver not installed (add handset/bin/shairport.exe)";
+      btn.title = "未安装 AirPlay 接收器（可添加 handset/bin/shairport.exe）";
       if (note) {
         note.hidden = false;
         note.textContent =
-          "Pane Audio is not bundled in this build. Place Shairport4w as handset/bin/shairport.exe to enable it.";
+          "此版本未包含 Pane Audio。使用源码运行时，可将 Shairport4w 放在 handset/bin/shairport.exe 以启用音频。";
       }
     } else if (data.connected) {
-      btn.title = "Audio streaming via Pane Audio";
+      btn.title = "正在通过 Pane Audio 播放声音";
       if (note) note.hidden = true;
     } else {
-      btn.title = "Set up AirPlay audio (click for steps)";
+      btn.title = "设置 AirPlay 音频（点击查看步骤）";
       if (note) note.hidden = true;
     }
   } catch (_) {}
@@ -615,7 +615,7 @@ function wireRemoteControls() {
   document.querySelector("#fs-exit")?.addEventListener("click", toggleFullscreen);
   document.addEventListener("fullscreenchange", () => {
     const btn = document.querySelector("#fullscreen");
-    if (btn) btn.textContent = document.fullscreenElement ? "Exit full screen" : "⛶ Full screen";
+    if (btn) btn.textContent = document.fullscreenElement ? "退出全屏" : "⛶ 全屏";
   });
   document.querySelectorAll("[data-btn]").forEach((btn) => {
     btn.addEventListener("click", () => {

@@ -36,11 +36,11 @@ def driver_status() -> dict:
     mux = _mux_listening()
     ready = bool(found) or service == "RUNNING" or mux
     if ready:
-        detail = "Apple's USB service is running. Plug in the iPhone, unlock it, and tap Trust."
+        detail = "Apple USB 服务已就绪。请连接 iPhone，解锁后点按「信任」。"
     else:
         detail = (
-            "Windows has no Apple USB driver, so it cannot see an iPhone yet. "
-            "Install Apple Devices from the Microsoft Store, then reconnect the phone and tap Trust."
+            "Windows 尚未安装 Apple USB 驱动，无法识别 iPhone。"
+            "请从 Microsoft Store 安装「Apple 设备」，重新连接手机并点按「信任」。"
         )
     return {"ready": ready, "paths": found, "service": service, "detail": detail}
 
@@ -78,11 +78,11 @@ def product_version(udid: str) -> str | None:
 def read_handset(udid: str) -> dict:
     match = next((device for device in list_devices() if device["udid"] == udid), None)
     if match is None:
-        raise MuxError("That iPhone is not connected.")
+        raise MuxError("这台 iPhone 尚未连接。")
     with open_lockdown(int(match["deviceId"])) as sock:
         kind = lockdown_request(sock, "QueryType")
         if kind.get("Type") != "com.apple.mobile.lockdown":
-            raise MuxError("The phone did not answer as a lockdown service.")
+            raise MuxError("iPhone 上的 lockdown 服务未正常响应。")
         result = lockdown_request(sock, "GetValue")
     if result.get("Error"):
         return {"udid": udid, "paired": False, "info": {}, "error": _lockdown_error(str(result["Error"]))}
@@ -93,10 +93,10 @@ def read_handset(udid: str) -> dict:
 
 def _lockdown_error(code: str) -> str:
     messages = {
-        "InvalidHostID": "This PC is not paired with the iPhone. Unlock the phone and tap Trust.",
-        "PairingDialogResponsePending": "Tap Trust on the iPhone.",
-        "UserDeniedPairing": "Trust was declined on the iPhone.",
-        "PasswordProtected": "Unlock the iPhone and try again.",
+        "InvalidHostID": "这台电脑尚未与 iPhone 配对。请解锁手机并点按「信任」。",
+        "PairingDialogResponsePending": "请在 iPhone 上点按「信任」。",
+        "UserDeniedPairing": "iPhone 已拒绝信任这台电脑。",
+        "PasswordProtected": "请解锁 iPhone 后重试。",
     }
     return messages.get(code, code)
 
