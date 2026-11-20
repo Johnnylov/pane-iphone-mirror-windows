@@ -124,6 +124,48 @@ async function pumpTouches() {
   touchBusy = false;
 }
 
+// A burst of wheel events is one finger drag. Lift the finger after a short
+// pause, or between strokes when a long scroll reaches the edge of the image.
+let wheelPoint = null;
+let wheelReleaseTimer = 0;
+
+function finishWheelSwipe() {
+  clearTimeout(wheelReleaseTimer);
+  if (wheelPoint) sendTouch("release", touchCoords(wheelPoint));
+  wheelPoint = null;
+}
+
+canvas.addEventListener("wheel", (event) => {
+  if (activePointer !== null || event.ctrlKey || event.shiftKey ||
+      !event.deltaY || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+  event.preventDefault();
+
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const unit = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 :
+    event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? rect.height : 1;
+  const distance = Math.sign(event.deltaY) * Math.min(Math.abs(event.deltaY * unit), rect.height * 0.4);
+  const top = rect.top + rect.height * 0.05;
+  const bottom = rect.bottom - rect.height * 0.05;
+  if (wheelPoint && (wheelPoint.clientY - distance < top || wheelPoint.clientY - distance > bottom)) {
+    finishWheelSwipe();
+  }
+  if (!wheelPoint) {
+    // Leave enough room in the swipe direction even with the cursor near an edge.
+    const startY = Math.max(top + Math.max(distance, 0),
+      Math.min(bottom + Math.min(distance, 0), event.clientY));
+    wheelPoint = {
+      clientX: Math.max(rect.left + rect.width * 0.05, Math.min(rect.right - rect.width * 0.05, event.clientX)),
+      clientY: startY,
+    };
+    sendTouch("contact", touchCoords(wheelPoint));
+  }
+  wheelPoint.clientY -= distance;
+  sendTouch("contact", touchCoords(wheelPoint), true);
+  clearTimeout(wheelReleaseTimer);
+  wheelReleaseTimer = setTimeout(finishWheelSwipe, 120);
+}, { passive: false });
+
 // iOS system gestures (Home bar, Control Center, Notification Center) only
 // trigger when the contact begins on the screen edge itself.
 const EDGE = 2500;
@@ -150,6 +192,7 @@ async function pressHome(times = 1) {
 }
 
 function releaseActive() {
+  finishWheelSwipe();
   if (activePointer === null) return;
   activePointer = null;
   if (edgeSwipe) {
@@ -171,6 +214,7 @@ function releaseActive() {
 // below the picture; coordinates clamp onto the screen edge.
 document.addEventListener("pointerdown", (e) => {
   if (e.button !== 0) return;
+  finishWheelSwipe();
   e.preventDefault();
   canvas.focus({ preventScroll: true });
   try {
@@ -214,6 +258,7 @@ document.body.addEventListener("lostpointercapture", (e) => {
   if (e.pointerId === activePointer) releaseActive();
 });
 window.addEventListener("blur", releaseActive);
+window.addEventListener("pagehide", releaseActive);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") releaseActive();
 });
