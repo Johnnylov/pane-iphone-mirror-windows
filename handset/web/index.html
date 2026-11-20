@@ -39,6 +39,7 @@
             </div>
             <span class="compact-title" id="compact-device-name">iPhone</span>
             <button type="button" class="ghost" data-wheel-settings aria-haspopup="dialog">滚轮设置</button>
+            <button type="button" class="ghost" data-auto-scroll aria-pressed="false" disabled>自动下滑</button>
             <button type="button" class="compact-audio-btn" id="compact-audio" title="通过 AirPlay 在电脑上播放声音">🔊</button>
           </div>
 
@@ -85,6 +86,7 @@
                   <iframe id="screen-view" class="screen-frame" title="iPhone 屏幕" hidden src="about:blank"></iframe>
                   <div class="iphone-notch" aria-hidden="true"><span class="notch-cam"></span></div>
                   <button type="button" class="fs-exit" id="fs-exit" title="退出全屏（Esc）">退出全屏</button>
+                  <button type="button" class="fs-exit fs-auto" data-auto-scroll aria-pressed="false" disabled>自动下滑</button>
                 </div>
               </div>
             </div>
@@ -107,6 +109,7 @@
             <button type="button" class="ghost ghost-block" id="restart-screen" hidden>重启投屏</button>
             <button type="button" class="ghost ghost-block kb-toggle" id="kb-toggle" aria-pressed="true" hidden>⌨ 键盘输入到 iPhone：开</button>
             <button type="button" class="ghost ghost-block" data-wheel-settings aria-haspopup="dialog">滚轮设置</button>
+            <button type="button" class="ghost ghost-block" data-auto-scroll aria-pressed="false" disabled>自动下滑</button>
             <p class="control-hint" id="control-hint">鼠标移到手机画面上，向下滚动可看下方内容，向上滚动可返回上方。从底边上滑可返回主屏幕，稍停再松开可切换 App。电脑键盘可直接输入。</p>
           </section>
 
@@ -223,7 +226,7 @@
         <input id="wheel-distance" type="number" inputmode="decimal" required aria-describedby="wheel-help">
         <span>%</span>
       </div>
-      <p class="fine" id="wheel-help">按手机画面高度计算。数值越小，越适合逐个浏览商品。</p>
+      <p class="fine" id="wheel-help">可调范围为屏高的 1.5% 至 50%。滚轮和自动下滑共用这个距离。</p>
       <div class="wheel-actions">
         <button type="button" class="ghost" id="wheel-reset">恢复默认</button>
         <button type="submit" class="primary">完成</button>

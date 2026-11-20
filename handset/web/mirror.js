@@ -132,6 +132,62 @@ let wheelPoint = null;
 let wheelPending = 0;
 let wheelStepTimer = 0;
 let wheelReleaseTimer = 0;
+let wheelStepSize = WHEEL_STEP;
+let autoScrollAvailable = false;
+let autoScrolling = false;
+let autoScrollTimer = 0;
+
+function publishAutoScroll() {
+  window.parent.postMessage({
+    source: "handset-mirror",
+    autoScroll: { available: autoScrollAvailable, active: autoScrolling },
+  }, window.location.origin);
+}
+
+function stopAutoScroll(settle = false) {
+  if (!autoScrolling) return;
+  autoScrolling = false;
+  clearTimeout(autoScrollTimer);
+  if (settle && wheelPoint) {
+    clearTimeout(wheelStepTimer);
+    clearTimeout(wheelReleaseTimer);
+    wheelPending = 0;
+    advanceWheelSwipe();
+  } else {
+    finishWheelSwipe();
+  }
+  publishAutoScroll();
+}
+
+function autoScrollOnce() {
+  if (!autoScrolling) return;
+  if (touchBusy) {
+    autoScrollTimer = setTimeout(autoScrollOnce, 100);
+    return;
+  }
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height || document.hidden) {
+    stopAutoScroll();
+    return;
+  }
+  const distance = wheelSettings.readPercent() / 100;
+  wheelPending = distance;
+  beginWheelSwipe(rect, rect.left + rect.width / 2,
+    rect.top + rect.height * (0.5 + distance / 2), distance);
+  advanceWheelSwipe();
+}
+
+function beginWheelSwipe(rect, x, y, distance) {
+  const inset = 0.06;
+  const top = rect.top + rect.height * (inset + Math.max(0, wheelPending));
+  const bottom = rect.bottom - rect.height * (inset + Math.max(0, -wheelPending));
+  wheelPoint = {
+    clientX: Math.max(rect.left + rect.width * inset, Math.min(rect.right - rect.width * inset, x)),
+    clientY: Math.max(top, Math.min(bottom, y)),
+  };
+  wheelStepSize = Math.max(WHEEL_STEP, distance / 24);
+  sendTouch("contact", touchCoords(wheelPoint));
+}
 
 function finishWheelSwipe() {
   clearTimeout(wheelStepTimer);
@@ -140,6 +196,8 @@ function finishWheelSwipe() {
   wheelPoint = null;
   wheelPending = 0;
   wheelStepTimer = 0;
+  clearTimeout(autoScrollTimer);
+  if (autoScrolling) autoScrollTimer = setTimeout(autoScrollOnce, 1000);
 }
 
 function advanceWheelSwipe() {
@@ -151,7 +209,7 @@ function advanceWheelSwipe() {
     return;
   }
   const rect = canvas.getBoundingClientRect();
-  const step = Math.sign(wheelPending) * Math.min(Math.abs(wheelPending), WHEEL_STEP);
+  const step = Math.sign(wheelPending) * Math.min(Math.abs(wheelPending), wheelStepSize);
   const nextY = wheelPoint.clientY - step * rect.height;
   if (nextY < rect.top + rect.height * 0.05 || nextY > rect.bottom - rect.height * 0.05) {
     sendTouch("release", touchCoords(wheelPoint));
@@ -169,6 +227,7 @@ canvas.addEventListener("wheel", (event) => {
       !event.deltaY || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
   event.preventDefault();
 
+  stopAutoScroll();
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
   const notchDistance = wheelSettings.readPercent() / 100;
@@ -190,11 +249,7 @@ canvas.addEventListener("wheel", (event) => {
       wheelReleaseTimer = setTimeout(finishWheelSwipe, 120);
       return;
     }
-    wheelPoint = {
-      clientX: Math.max(rect.left + rect.width * 0.05, Math.min(rect.right - rect.width * 0.05, event.clientX)),
-      clientY: Math.max(rect.top + rect.height * 0.1, Math.min(rect.bottom - rect.height * 0.1, event.clientY)),
-    };
-    sendTouch("contact", touchCoords(wheelPoint));
+    beginWheelSwipe(rect, event.clientX, event.clientY, notchDistance);
   }
   if (!wheelStepTimer) advanceWheelSwipe();
 }, { passive: false });
@@ -247,6 +302,7 @@ function releaseActive() {
 // below the picture; coordinates clamp onto the screen edge.
 document.addEventListener("pointerdown", (e) => {
   if (e.button !== 0) return;
+  stopAutoScroll();
   finishWheelSwipe();
   e.preventDefault();
   canvas.focus({ preventScroll: true });
@@ -290,10 +346,18 @@ window.addEventListener("pointercancel", onUp);
 document.body.addEventListener("lostpointercapture", (e) => {
   if (e.pointerId === activePointer) releaseActive();
 });
-window.addEventListener("blur", releaseActive);
-window.addEventListener("pagehide", releaseActive);
+window.addEventListener("blur", () => {
+  if (!autoScrolling) releaseActive();
+});
+window.addEventListener("pagehide", () => {
+  stopAutoScroll();
+  releaseActive();
+});
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") releaseActive();
+  if (document.hidden) {
+    stopAutoScroll();
+    releaseActive();
+  }
 });
 
 document.addEventListener("contextmenu", (e) => {
@@ -315,8 +379,19 @@ window.HandsetKeys.attach({
 window.addEventListener("message", (e) => {
   if (e.origin !== window.location.origin) return;
   const d = e.data;
-  if (!d || d.source !== "handset") return;
-  if (d.cmd === "rotate") {
+  if (!d || d.source !== "handset" || e.source !== window.parent) return;
+  if (d.cmd === "toggle-auto-scroll") {
+    if (autoScrolling) {
+      stopAutoScroll(true);
+    } else if (autoScrollAvailable && !document.hidden && activePointer === null) {
+      finishWheelSwipe();
+      autoScrolling = true;
+      publishAutoScroll();
+      autoScrollOnce();
+    }
+  } else if (d.cmd === "stop-auto-scroll") {
+    stopAutoScroll();
+  } else if (d.cmd === "rotate") {
     visualRotation = (visualRotation + (d.deg || 0)) % 360;
     if (lastFrame) drawFrame(lastFrame);
     fitCanvas();
@@ -438,6 +513,10 @@ async function run(generation) {
   const buildDecoder = () =>
     new VideoDecoder({
       output: (frame) => {
+        if (generation !== runGeneration) {
+          frame.close();
+          return;
+        }
         if (pendingFrame) {
           try {
             pendingFrame.close();
@@ -449,6 +528,10 @@ async function run(generation) {
           requestAnimationFrame(drawPending);
         }
         frameCount += 1;
+        if (!autoScrollAvailable && generation === runGeneration) {
+          autoScrollAvailable = true;
+          publishAutoScroll();
+        }
       },
       error: () => {
         needsResync = true;
@@ -565,6 +648,9 @@ async function run(generation) {
 }
 
 function beginRun() {
+  autoScrollAvailable = false;
+  stopAutoScroll();
+  publishAutoScroll();
   runGeneration += 1;
   const generation = runGeneration;
   if (abortStream) {
@@ -586,6 +672,13 @@ function beginRun() {
   frameCount = 0;
   run(generation).catch((err) => {
     setStatus(err.message || "投屏失败", "warn");
+  }).finally(() => {
+    if (generation !== runGeneration) return;
+    // Discard any decoder callbacks that arrive after the stream has ended.
+    runGeneration += 1;
+    autoScrollAvailable = false;
+    stopAutoScroll();
+    publishAutoScroll();
   });
 }
 

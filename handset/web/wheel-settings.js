@@ -3,7 +3,7 @@ const wheelSettings = {
   key: "pane-wheel-distance-percent",
   defaultPercent: 2.5,
   min: 1.5,
-  max: 10,
+  max: 50,
   step: 0.1,
 
   readPercent() {

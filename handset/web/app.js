@@ -291,6 +291,7 @@ function renderScreen(screen) {
   workspace.classList.remove("is-live");
   phoneShell.classList.remove("live", "is-landscape");
   remotePanel.hidden = true;
+  renderAutoScroll(false, false);
   restartScreen.hidden = true;
   kbToggle.hidden = true;
   screenView.hidden = true;
@@ -379,14 +380,31 @@ function mirrorMessage(cmd, extra = {}) {
   screenView.contentWindow.postMessage({ source: "handset", cmd, ...extra }, window.location.origin);
 }
 
+const autoScrollButtons = document.querySelectorAll("[data-auto-scroll]");
+function renderAutoScroll(available, active) {
+  for (const button of autoScrollButtons) {
+    button.disabled = !available;
+    button.setAttribute("aria-pressed", String(active));
+    button.textContent = active ? "停止下滑" : "自动下滑";
+  }
+}
+for (const button of autoScrollButtons) {
+  button.addEventListener("click", () => mirrorMessage("toggle-auto-scroll"));
+}
+
 window.addEventListener("message", (e) => {
   if (e.origin !== window.location.origin) return;
-  if (e.data?.source !== "handset-mirror") return;
-  phoneShell.classList.toggle("is-landscape", Boolean(e.data.landscape));
+  if (e.source !== screenView.contentWindow || e.data?.source !== "handset-mirror") return;
+  if (e.data.autoScroll && !screenView.hidden) {
+    renderAutoScroll(e.data.autoScroll.available, e.data.autoScroll.active);
+  } else if ("landscape" in e.data) {
+    phoneShell.classList.toggle("is-landscape", Boolean(e.data.landscape));
+  }
 });
 
 function reloadMirrorIframe() {
   if (screenView.hidden) return;
+  renderAutoScroll(false, false);
   const stamp = `t=${Date.now()}`;
   screenView.src = "about:blank";
   requestAnimationFrame(() => {
@@ -397,6 +415,7 @@ function reloadMirrorIframe() {
 }
 
 async function restartMirror() {
+  mirrorMessage("stop-auto-scroll");
   restartScreen.disabled = true;
   screenNote.textContent = "正在重启投屏，请保持 iPhone 解锁。";
   screenNote.className = "";

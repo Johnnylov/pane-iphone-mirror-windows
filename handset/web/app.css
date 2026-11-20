@@ -330,6 +330,8 @@ button:active { transform: scale(0.98); }
 
 .iphone-screen:fullscreen .iphone-notch { display: none; }
 .iphone-screen:fullscreen .fs-exit { display: block; }
+.fs-auto { left: 16px; right: auto; }
+[data-auto-scroll][aria-pressed="true"] { color: var(--accent); border-color: currentColor; }
 
 .placeholder {
   position: absolute;
