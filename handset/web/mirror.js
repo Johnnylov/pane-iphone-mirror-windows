@@ -124,15 +124,45 @@ async function pumpTouches() {
   touchBusy = false;
 }
 
-// A burst of wheel events is one finger drag. Lift the finger after a short
-// pause, or between strokes when a long scroll reaches the edge of the image.
+// Use fractions of the displayed screen so a wheel notch feels the same in
+// compact and full-screen views. A short, paced drag avoids an iOS flick.
+const WHEEL_NOTCH = 0.025;
+const WHEEL_STEP = 0.005;
+const WHEEL_INTERVAL_MS = 20;
 let wheelPoint = null;
+let wheelPending = 0;
+let wheelStepTimer = 0;
 let wheelReleaseTimer = 0;
 
 function finishWheelSwipe() {
+  clearTimeout(wheelStepTimer);
   clearTimeout(wheelReleaseTimer);
   if (wheelPoint) sendTouch("release", touchCoords(wheelPoint));
   wheelPoint = null;
+  wheelPending = 0;
+  wheelStepTimer = 0;
+}
+
+function advanceWheelSwipe() {
+  wheelStepTimer = 0;
+  if (!wheelPending) {
+    // A stationary sample before lifting also lets iOS discard drag velocity.
+    sendTouch("contact", touchCoords(wheelPoint), true);
+    wheelReleaseTimer = setTimeout(finishWheelSwipe, 100);
+    return;
+  }
+  const rect = canvas.getBoundingClientRect();
+  const step = Math.sign(wheelPending) * Math.min(Math.abs(wheelPending), WHEEL_STEP);
+  const nextY = wheelPoint.clientY - step * rect.height;
+  if (nextY < rect.top + rect.height * 0.05 || nextY > rect.bottom - rect.height * 0.05) {
+    sendTouch("release", touchCoords(wheelPoint));
+    wheelPoint.clientY = rect.top + rect.height * 0.5;
+    sendTouch("contact", touchCoords(wheelPoint));
+  }
+  wheelPoint.clientY -= step * rect.height;
+  wheelPending -= step;
+  sendTouch("contact", touchCoords(wheelPoint), true);
+  wheelStepTimer = setTimeout(advanceWheelSwipe, WHEEL_INTERVAL_MS);
 }
 
 canvas.addEventListener("wheel", (event) => {
@@ -142,28 +172,30 @@ canvas.addEventListener("wheel", (event) => {
 
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
-  const unit = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 :
-    event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? rect.height : 1;
-  const distance = Math.sign(event.deltaY) * Math.min(Math.abs(event.deltaY * unit), rect.height * 0.4);
-  const top = rect.top + rect.height * 0.05;
-  const bottom = rect.bottom - rect.height * 0.05;
-  if (wheelPoint && (wheelPoint.clientY - distance < top || wheelPoint.clientY - distance > bottom)) {
-    finishWheelSwipe();
+  const unitsPerNotch = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 3 :
+    event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? 1 : 100;
+  let notches = Math.max(-1, Math.min(1, event.deltaY / unitsPerNotch));
+  // Windows can be set to just one line per notch. Make such a detent
+  // large enough to start a pan, while accumulating finer touchpad input.
+  if (!wheelPoint && Math.abs(notches) >= 0.3) {
+    notches = Math.sign(notches) * Math.max(0.6, Math.abs(notches));
   }
+  if (wheelPending * notches < 0) wheelPending = 0;
+  wheelPending = Math.max(-2 * WHEEL_NOTCH, Math.min(2 * WHEEL_NOTCH, wheelPending + notches * WHEEL_NOTCH));
+  clearTimeout(wheelReleaseTimer);
   if (!wheelPoint) {
-    // Leave enough room in the swipe direction even with the cursor near an edge.
-    const startY = Math.max(top + Math.max(distance, 0),
-      Math.min(bottom + Math.min(distance, 0), event.clientY));
+    // Ignore isolated trackpad noise instead of turning it into a product tap.
+    if (Math.abs(wheelPending) < WHEEL_NOTCH * 0.6) {
+      wheelReleaseTimer = setTimeout(finishWheelSwipe, 120);
+      return;
+    }
     wheelPoint = {
       clientX: Math.max(rect.left + rect.width * 0.05, Math.min(rect.right - rect.width * 0.05, event.clientX)),
-      clientY: startY,
+      clientY: Math.max(rect.top + rect.height * 0.1, Math.min(rect.bottom - rect.height * 0.1, event.clientY)),
     };
     sendTouch("contact", touchCoords(wheelPoint));
   }
-  wheelPoint.clientY -= distance;
-  sendTouch("contact", touchCoords(wheelPoint), true);
-  clearTimeout(wheelReleaseTimer);
-  wheelReleaseTimer = setTimeout(finishWheelSwipe, 120);
+  if (!wheelStepTimer) advanceWheelSwipe();
 }, { passive: false });
 
 // iOS system gestures (Home bar, Control Center, Notification Center) only
