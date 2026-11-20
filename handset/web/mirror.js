@@ -126,7 +126,6 @@ async function pumpTouches() {
 
 // Use fractions of the displayed screen so a wheel notch feels the same in
 // compact and full-screen views. A short, paced drag avoids an iOS flick.
-const WHEEL_NOTCH = 0.025;
 const WHEEL_STEP = 0.005;
 const WHEEL_INTERVAL_MS = 20;
 let wheelPoint = null;
@@ -172,20 +171,22 @@ canvas.addEventListener("wheel", (event) => {
 
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
+  const notchDistance = wheelSettings.readPercent() / 100;
+  const startDistance = Math.max(0.015, notchDistance * 0.6);
   const unitsPerNotch = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 3 :
     event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? 1 : 100;
   let notches = Math.max(-1, Math.min(1, event.deltaY / unitsPerNotch));
   // Windows can be set to just one line per notch. Make such a detent
   // large enough to start a pan, while accumulating finer touchpad input.
   if (!wheelPoint && Math.abs(notches) >= 0.3) {
-    notches = Math.sign(notches) * Math.max(0.6, Math.abs(notches));
+    notches = Math.sign(notches) * Math.max(startDistance / notchDistance, Math.abs(notches));
   }
   if (wheelPending * notches < 0) wheelPending = 0;
-  wheelPending = Math.max(-2 * WHEEL_NOTCH, Math.min(2 * WHEEL_NOTCH, wheelPending + notches * WHEEL_NOTCH));
+  wheelPending = Math.max(-2 * notchDistance, Math.min(2 * notchDistance, wheelPending + notches * notchDistance));
   clearTimeout(wheelReleaseTimer);
   if (!wheelPoint) {
     // Ignore isolated trackpad noise instead of turning it into a product tap.
-    if (Math.abs(wheelPending) < WHEEL_NOTCH * 0.6) {
+    if (Math.abs(wheelPending) < startDistance) {
       wheelReleaseTimer = setTimeout(finishWheelSwipe, 120);
       return;
     }

@@ -38,6 +38,7 @@
               <button type="button" class="traffic-dot dot-green" id="compact-expand" title="全屏显示手机画面"></button>
             </div>
             <span class="compact-title" id="compact-device-name">iPhone</span>
+            <button type="button" class="ghost" data-wheel-settings aria-haspopup="dialog">滚轮设置</button>
             <button type="button" class="compact-audio-btn" id="compact-audio" title="通过 AirPlay 在电脑上播放声音">🔊</button>
           </div>
 
@@ -105,6 +106,7 @@
             <button type="button" class="primary primary-block" id="show-screen">开始投屏</button>
             <button type="button" class="ghost ghost-block" id="restart-screen" hidden>重启投屏</button>
             <button type="button" class="ghost ghost-block kb-toggle" id="kb-toggle" aria-pressed="true" hidden>⌨ 键盘输入到 iPhone：开</button>
+            <button type="button" class="ghost ghost-block" data-wheel-settings aria-haspopup="dialog">滚轮设置</button>
             <p class="control-hint" id="control-hint">鼠标移到手机画面上，向下滚动可看下方内容，向上滚动可返回上方。从底边上滑可返回主屏幕，稍停再松开可切换 App。电脑键盘可直接输入。</p>
           </section>
 
@@ -212,6 +214,23 @@
       <p>Pane · GPL-3.0 · 通过 USB 或 Wi-Fi 投屏并操控 iPhone</p>
     </footer>
   </div>
+  <dialog id="wheel-settings" aria-labelledby="wheel-settings-title">
+    <form method="dialog">
+      <h2 id="wheel-settings-title">滚轮设置</h2>
+      <label for="wheel-distance">每格滑动距离</label>
+      <div class="wheel-distance-row">
+        <input id="wheel-slider" type="range" aria-label="滑动距离百分比" autofocus>
+        <input id="wheel-distance" type="number" inputmode="decimal" required aria-describedby="wheel-help">
+        <span>%</span>
+      </div>
+      <p class="fine" id="wheel-help">按手机画面高度计算。数值越小，越适合逐个浏览商品。</p>
+      <div class="wheel-actions">
+        <button type="button" class="ghost" id="wheel-reset">恢复默认</button>
+        <button type="submit" class="primary">完成</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="/wheel-settings.js"></script>
   <script src="/keys.js"></script>
   <script src="/app.js"></script>
 </body>

@@ -19,6 +19,7 @@ const phoneScreen = document.querySelector("#phone-screen");
 const kbToggle = document.querySelector("#kb-toggle");
 const wifiState = document.querySelector("#wifi-state");
 const wifiPair = document.querySelector("#wifi-pair");
+const wheelDialog = document.querySelector("#wheel-settings");
 const MIRROR_PAGE = "/mirror.html";
 const MIRROR_API = "/mirror";
 
@@ -504,7 +505,41 @@ function setKeyboard(on) {
 
 const keyboard = window.HandsetKeys.attach({
   post: (payload) => mirrorPost("/key", payload),
-  enabled: () => window.handsetKeyboardOn && workspace.classList.contains("is-live"),
+  enabled: () => !wheelDialog.open && window.handsetKeyboardOn && workspace.classList.contains("is-live"),
+});
+
+const wheelSlider = document.querySelector("#wheel-slider");
+const wheelDistance = document.querySelector("#wheel-distance");
+for (const input of [wheelSlider, wheelDistance]) {
+  input.min = wheelSettings.min;
+  input.max = wheelSettings.max;
+  input.step = wheelSettings.step;
+}
+function showWheelPercent(value) {
+  wheelSlider.value = value;
+  wheelSlider.setAttribute("aria-valuetext", value + "% 屏高");
+  wheelDistance.value = value;
+}
+for (const button of document.querySelectorAll("[data-wheel-settings]")) {
+  button.addEventListener("click", () => {
+    keyboard.releaseAll();
+    showWheelPercent(wheelSettings.readPercent());
+    wheelDialog.showModal();
+  });
+}
+wheelSlider.addEventListener("input", () => {
+  showWheelPercent(wheelSlider.value);
+  localStorage.setItem(wheelSettings.key, wheelSlider.value);
+});
+wheelDistance.addEventListener("input", () => {
+  if (!wheelDistance.validity.valid) return;
+  wheelSlider.value = wheelDistance.value;
+  wheelSlider.setAttribute("aria-valuetext", wheelDistance.value + "% 屏高");
+  localStorage.setItem(wheelSettings.key, wheelDistance.value);
+});
+document.querySelector("#wheel-reset").addEventListener("click", () => {
+  localStorage.removeItem(wheelSettings.key);
+  showWheelPercent(wheelSettings.defaultPercent);
 });
 
 const COMPACT_SIZE = { width: 440, height: 890 };
